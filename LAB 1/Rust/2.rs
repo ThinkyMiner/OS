@@ -8,14 +8,14 @@ fn main() {
         match io::stdin().read_exact(&mut buffer) {
             Ok(_) => {
                 let ch = buffer[0] as char;
-                
+
                 if !ch.is_ascii_alphabetic() {
                     non_alpha_count += 1;
                 }
 
                 io::stdout().write_all(&buffer).expect("Failed to write to stdout");
             }
-            Err(_) => break, 
+            Err(_) => break,
         }
     }
     println!("\nNumber of non-alphabetic characters: {}", non_alpha_count);

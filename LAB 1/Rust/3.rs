@@ -20,7 +20,6 @@ fn main() -> io::Result<()> {
             output.push(c);
         }
     }
-
     io::stdout().write_all(output.as_bytes())?;
 
     Ok(())
