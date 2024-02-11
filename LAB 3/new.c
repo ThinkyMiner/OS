@@ -26,10 +26,10 @@ int min(int a, int b) {
   return b;
 }
 
-void ReadProcessTable() {
-  FILE *file = fopen("1.txt", "r");
+void ReadProcessTable(char *filename) {
+  FILE *file = fopen(filename, "r");
   if (file == NULL) {
-    printf("Error: Could not open file 1.txt\n");
+    printf("Error: Could not open file %s\n", filename);
     return;
   }
 
@@ -192,23 +192,41 @@ void SRBF(int global) {
 
 int main() {
   int i = -1;
+  printf("Enter the file name : ");
+      char filename[100];
+      scanf("%s", filename);
   while(i){
     printf("Enter 1 to run FCFS\n");
     printf("Enter 2 to run Round Robin\n");
     printf("Enter 3 to run SRBF\n");
+    printf("Enter 4 to change the file\n");
     printf("Enter 0 to exit\n");
     scanf("%d", &i);
     if(i == 1){
-      ReadProcessTable();
+      printf("Enter the file name : ");
+      char filename[100];
+      scanf("%s", filename);
+      ReadProcessTable(filename);
       FCFS();
     }
     else if(i == 2){
-      ReadProcessTable();
+      printf("Enter the file name : ");
+      char filename[100];
+      scanf("%s", filename);
+      ReadProcessTable(filename);
       RoundRobin();
     }
     else if(i == 3){
-      ReadProcessTable();
+      printf("Enter the file name : ");
+      char filename[100];
+      scanf("%s", filename);
+      ReadProcessTable(filename);
       SRBF(global);
+    }
+    else if(i == 4){
+      printf("Enter the file name : ");
+      char filename[100];
+      scanf("%s", filename);
     }
 
   }
