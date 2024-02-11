@@ -5,11 +5,11 @@
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
-    
+
     int pipefd[2];
     pipe(pipefd);
 
-    int pid1 = fork();
+    pid_t pid1 = fork();
     if (pid1 == 0) {
         // at 0 index we have read and 1 index we have write
         close(pipefd[1]);
@@ -29,10 +29,9 @@ int main(int argc, char *argv[]) {
     close(pipefd[0]);
     close(pipefd[1]);
 
-    wait(0);
-    wait(0);
+    wait(NULL);
+    wait(NULL);
 
     return 0;
 }
-
 
