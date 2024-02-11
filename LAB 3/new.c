@@ -192,7 +192,7 @@ void SRBF(int global) {
 
 int main() {
   int i = -1;
-  printf("Enter the file name : ");
+  printf("Select the file name from 1.txt, 2.txt, 3.txt, 4.txt: ");
       char filename[100];
       scanf("%s", filename);
   while(i){
@@ -224,7 +224,7 @@ int main() {
       SRBF(global);
     }
     else if(i == 4){
-      printf("Enter the file name : ");
+      printf("Enter the file name (1.txt / 2.txt / 3.txt / 4.txt): ");
       char filename[100];
       scanf("%s", filename);
     }
