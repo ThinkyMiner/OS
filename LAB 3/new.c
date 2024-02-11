@@ -203,23 +203,14 @@ int main() {
     printf("Enter 0 to exit\n");
     scanf("%d", &i);
     if(i == 1){
-      printf("Enter the file name : ");
-      char filename[100];
-      scanf("%s", filename);
       ReadProcessTable(filename);
       FCFS();
     }
     else if(i == 2){
-      printf("Enter the file name : ");
-      char filename[100];
-      scanf("%s", filename);
       ReadProcessTable(filename);
       RoundRobin();
     }
     else if(i == 3){
-      printf("Enter the file name : ");
-      char filename[100];
-      scanf("%s", filename);
       ReadProcessTable(filename);
       SRBF(global);
     }
