@@ -13,6 +13,56 @@ typedef struct {
   int wait;
 } Process;
 
+typedef struct{
+  char name[MAX_NAME_LENGTH];
+  int totalTime;
+  int AverageTurnAroundTime;
+  int AverageWaitingTime;
+} Result;
+
+Result resultTable[3];
+
+void sortResultTable() {
+  int i, j;
+  Result temp;
+
+  // Sort based on average turnaround time
+  for (i = 0; i < 3 - 1; i++) {
+    for (j = 0; j < 3 - i - 1; j++) {
+      if (resultTable[j].AverageTurnAroundTime > resultTable[j + 1].AverageTurnAroundTime) {
+        temp = resultTable[j];
+        resultTable[j] = resultTable[j + 1];
+        resultTable[j + 1] = temp;
+      }
+    }
+  }
+  printf("%s has the least Average Turn Around Time\n", resultTable[0].name);
+
+  // Sort based on average wait time
+  for (i = 0; i < 3 - 1; i++) {
+    for (j = 0; j < 3 - i - 1; j++) {
+      if (resultTable[j].AverageWaitingTime > resultTable[j + 1].AverageWaitingTime) {
+        temp = resultTable[j];
+        resultTable[j] = resultTable[j + 1];
+        resultTable[j + 1] = temp;
+      }
+    }
+  }
+  printf("%s has the least Average Waiting Time\n", resultTable[0].name);
+
+  // Sort based on total time
+  for (i = 0; i < 3 - 1; i++) {
+    for (j = 0; j < 3 - i - 1; j++) {
+      if (resultTable[j].totalTime > resultTable[j + 1].totalTime) {
+        temp = resultTable[j];
+        resultTable[j] = resultTable[j + 1];
+        resultTable[j + 1] = temp;
+      }
+    }
+  }
+  printf("%s has the least Total Time\n", resultTable[0].name);
+}
+
 int global = 0;
 
 Process processTable[MAX_PROCESS];
@@ -82,6 +132,10 @@ void FCFS() {
     printf("%s [%d]\n", processTable[i].name,
            currentTime - processTable[i].arrival);
   }
+  strcpy(resultTable[0].name, "FCFS");
+  resultTable[0].AverageTurnAroundTime = (double)TAsum / (double)global;
+  resultTable[0].AverageWaitingTime = (double)Wsum / (double)global;
+  resultTable[0].totalTime = currentTime;
   printf("Average Turn Around Time : %.2lf \nAverage Waiting Time : %.2lf\n",
     (double)TAsum / (double)global, (double)Wsum / (double)global);
 }
@@ -133,6 +187,10 @@ void RoundRobin() {
     printf("%s [%d]\n", processTable[i].name, processTable[i].wait);
     Wsum += processTable[i].wait;
   }
+  strcpy(resultTable[1].name, "Round Robin");
+  resultTable[1].AverageTurnAroundTime = (double)TAsum / (double)global;
+  resultTable[1].AverageWaitingTime = (double)Wsum / (double)global;
+  resultTable[1].totalTime = currentTime;
   printf("Average Turn Around Time : %.2lf\n", (double)TAsum / (global));
   printf("Average Waiting Time : %.2lf\n", (double)Wsum / (global));
 }
@@ -188,13 +246,17 @@ void SRBF(int global) {
     printf("%s [%d]\n", processTable[i].name, processTable[i].wait);
     Wsum += processTable[i].wait;
   }
+  strcpy(resultTable[2].name, "SRBF");
+  resultTable[2].AverageTurnAroundTime = (double)TAsum / (double)global;
+  resultTable[2].AverageWaitingTime = (double)Wsum / (double)global;
+  resultTable[2].totalTime = currentTime;
   printf("Average Turnaround Time : %.2lf\n", (double)TAsum / (global));
   printf("Average Waiting Time : %.2lf\n", (double)Wsum / (global));
 }
 
 int main() {
   int i = -1;
-  freopen("result.txt", "w", stdout);
+  // freopen("result.txt", "w", stdout);
   printf("Select the file name from 1.txt, 2.txt, 3.txt, 4.txt: ");
   char filename[100];
   scanf("%s", filename);
@@ -220,5 +282,6 @@ int main() {
       scanf("%s", filename);
     }
   }
+  sortResultTable();
   return 0;
 }
