@@ -1,0 +1,31 @@
+Select the file name from 1.txt, 2.txt, 3.txt, 4.txt: Enter 1 to run FCFS
+Enter 2 to run Round Robin
+Enter 3 to run SRBF
+Enter 4 to change the file
+Enter 0 to exit
+Read processes:
+Process ID: P0, Arrival Time: 0, Burst Time: 3
+Process ID: P1, Arrival Time: 1, Burst Time: 6
+Process ID: P2, Arrival Time: 5, Burst Time: 4
+Process ID: P3, Arrival Time: 7, Burst Time: 3
+[0 - 3] P0 running
+[3 - 9] P1 running
+[9 - 13] P2 running
+[13 - 16] P3 running
+Turn Around Time
+P0 [3]
+P1 [8]
+P2 [8]
+P3 [9]
+Wait Time
+P0 [0]
+P1 [2]
+P2 [4]
+P3 [6]
+Average Turn Around Time : 7.00 
+Average Waiting Time : 3.00
+Enter 1 to run FCFS
+Enter 2 to run Round Robin
+Enter 3 to run SRBF
+Enter 4 to change the file
+Enter 0 to exit
