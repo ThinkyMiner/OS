@@ -3,285 +3,131 @@
 #include <string.h>
 
 #define MAX_PROCESS 100
-#define MAX_NAME_LENGTH 50
+
 typedef struct {
-  char name[MAX_NAME_LENGTH];
+  char *name;
   int arrival;
+
   int cpuburst;
   int turnaround;
-  int remainingBurst;
   int wait;
 } Process;
 
-typedef struct{
-  char name[MAX_NAME_LENGTH];
-  int totalTime;
-  int AverageTurnAroundTime;
-  int AverageWaitingTime;
-} Result;
-
-Result resultTable[3];
-
-void sortResultTable() {
-  int i, j;
-  Result temp;
-
-  // Sort based on average turnaround time
-  for (i = 0; i < 3 - 1; i++) {
-    for (j = 0; j < 3 - i - 1; j++) {
-      if (resultTable[j].AverageTurnAroundTime > resultTable[j + 1].AverageTurnAroundTime) {
-        temp = resultTable[j];
-        resultTable[j] = resultTable[j + 1];
-        resultTable[j + 1] = temp;
-      }
-    }
-  }
-  printf("%s has the least Average Turn Around Time\n", resultTable[0].name);
-
-  // Sort based on average wait time
-  for (i = 0; i < 3 - 1; i++) {
-    for (j = 0; j < 3 - i - 1; j++) {
-      if (resultTable[j].AverageWaitingTime > resultTable[j + 1].AverageWaitingTime) {
-        temp = resultTable[j];
-        resultTable[j] = resultTable[j + 1];
-        resultTable[j + 1] = temp;
-      }
-    }
-  }
-  printf("%s has the least Average Waiting Time\n", resultTable[0].name);
-
-  // Sort based on total time
-  for (i = 0; i < 3 - 1; i++) {
-    for (j = 0; j < 3 - i - 1; j++) {
-      if (resultTable[j].totalTime > resultTable[j + 1].totalTime) {
-        temp = resultTable[j];
-        resultTable[j] = resultTable[j + 1];
-        resultTable[j + 1] = temp;
-      }
-    }
-  }
-  printf("%s has the least Total Time\n", resultTable[0].name);
-}
-
-int global = 0;
-
-Process processTable[MAX_PROCESS];
-
+Process processtable[MAX_PROCESS];
 int current_time;
-
-int min(int a, int b) {
-  if (a < b) {
-    return a;
-  }
-  return b;
-}
 
 void ReadProcessTable(char *filename) {
   FILE *file = fopen(filename, "r");
   if (file == NULL) {
-    printf("Error: Could not open file %s\n", filename);
+    printf("Cannot open file\n");
     return;
   }
 
   int i = 0;
-  while (fscanf(file, "%s %d %d", processTable[i].name,
-                &processTable[i].arrival, &processTable[i].cpuburst) == 3) {
+  while (!feof(file)) {
+    processtable[i].name = malloc(50 * sizeof(char));
+    fscanf(file, "%s %d %d", processtable[i].name, &processtable[i].arrival,
+           &processtable[i].cpuburst);
     i++;
   }
 
-  global = i;
-
   fclose(file);
+}
 
-  // Print only if processes were successfully read
-  if (i > 0) {
-    printf("Read processes:\n");
-    for (int j = 0; j < i; j++) {
-      printf("Process ID: %s, Arrival Time: %d, Burst Time: %d\n",
-             processTable[j].name, processTable[j].arrival,
-             processTable[j].cpuburst);
-    }
-  } else {
-    printf("No processes found in the file.\n");
+void PrintProcessTable() {
+  for (int i = 0; i < MAX_PROCESS; i++) {
+    printf("%s %d %d\n", processtable[i].name, processtable[i].arrival,
+           processtable[i].cpuburst);
   }
 }
 
 void FCFS() {
-  int currentTime = 0;
-  for (int i = 0; i < global; i++) {
-    printf("[%d - %d] %s running\n", currentTime,
-           currentTime + processTable[i].cpuburst, processTable[i].name);
-    currentTime = currentTime + processTable[i].cpuburst;
+  current_time = 0;
+  for (int i = 0; i < MAX_PROCESS; i++) {
+    if (processtable[i].arrival > current_time) {
+      processtable[i].wait = processtable[i].arrival - current_time;
+      current_time = processtable[i].arrival;
+    } else {
+      processtable[i].wait = 0;
+    }
+    current_time += processtable[i].cpuburst;
+    processtable[i].turnaround = current_time - processtable[i].arrival;
   }
-  printf("Turn Around Time\n");
-  int TAsum = 0;
-  currentTime = 0;
-  for (int i = 0; i < global; i++) {
-    TAsum += currentTime + processTable[i].cpuburst - processTable[i].arrival;
-    currentTime += processTable[i].cpuburst;
-    printf("%s [%d]\n", processTable[i].name,
-           currentTime - processTable[i].arrival);
-  }
-  printf("Wait Time\n");
-  int Wsum = 0;
-  currentTime = 0;
-  printf("%s [%d]\n", processTable[0].name, 0);
-  for (int i = 1; i < global; i++) {
-    currentTime += processTable[i - 1].cpuburst;
-    Wsum += currentTime - processTable[i].arrival;
-    printf("%s [%d]\n", processTable[i].name,
-           currentTime - processTable[i].arrival);
-  }
-  strcpy(resultTable[0].name, "FCFS");
-  resultTable[0].AverageTurnAroundTime = (double)TAsum / (double)global;
-  resultTable[0].AverageWaitingTime = (double)Wsum / (double)global;
-  resultTable[0].totalTime = currentTime;
-  printf("Average Turn Around Time : %.2lf \nAverage Waiting Time : %.2lf\n",
-    (double)TAsum / (double)global, (double)Wsum / (double)global);
 }
 
-void RoundRobin() {
-  int index = global;
-  int timeQuantum = 0;
-  printf("Enter the time quantum : ");
-  scanf("%d", &timeQuantum);
-  int currentTime = 0;
-  Process tempTable[MAX_PROCESS];
-  int j = 0;
-  int count = 1;
-  int remainingTime[global];
-  for (int i = 0; i < global; i++) {
-    remainingTime[i] = processTable[i].cpuburst;
-  }
-  while (count < index) {
-    for (int i = 0; i < index; i++) {
-      if (processTable[i].cpuburst > 0 &&
-          currentTime >= processTable[i].arrival) {
-        printf("[%d - %d] %s running\n", currentTime,
-               min(currentTime + timeQuantum,
-                   currentTime + processTable[i].cpuburst),
-               processTable[i].name);
+void PrintStatistics() {
+  for (int i = 0; i < MAX_PROCESS; i++) {
+    printf("%s %d %d\n", processtable[i].name, processtable[i].turnaround,
+           processtable[i].wait);
 
-        currentTime = min(currentTime + timeQuantum,
-                          currentTime + processTable[i].cpuburst);
-        processTable[i].cpuburst -= timeQuantum;
-        processTable[i].turnaround = currentTime - processTable[i].arrival;
-        processTable[i].wait =
-            currentTime - processTable[i].arrival - remainingTime[i];
-        if (processTable[i].cpuburst <= 0) {
-          count++;
+  }
+}
+
+void RR(int quantum) {
+  current_time = 0;
+  int remaining = MAX_PROCESS;
+  while (remaining > 0) {
+    for (int i = 0; i < MAX_PROCESS; i++) {
+      if (processtable[i].arrival <= current_time &&
+          processtable[i].cpuburst > 0) {
+        if (processtable[i].cpuburst > quantum) {
+          current_time += quantum;
+          processtable[i].cpuburst -= quantum;
+        } else {
+          current_time += processtable[i].cpuburst;
+          processtable[i].cpuburst = 0;
+          remaining--;
+          processtable[i].turnaround = current_time - processtable[i].arrival;
         }
       }
     }
   }
-  int TAsum = 0;
-  printf("Turn Around Time\n");
-  for (int i = 0; i < global; i++) {
-    printf("%s [%d]\n", processTable[i].name, processTable[i].turnaround);
-    TAsum += processTable[i].turnaround;
-  }
-
-  int Wsum = 0;
-  printf("Wait Time\n");
-  for (int i = 0; i < global; i++) {
-    printf("%s [%d]\n", processTable[i].name, processTable[i].wait);
-    Wsum += processTable[i].wait;
-  }
-  strcpy(resultTable[1].name, "Round Robin");
-  resultTable[1].AverageTurnAroundTime = (double)TAsum / (double)global;
-  resultTable[1].AverageWaitingTime = (double)Wsum / (double)global;
-  resultTable[1].totalTime = currentTime;
-  printf("Average Turn Around Time : %.2lf\n", (double)TAsum / (global));
-  printf("Average Waiting Time : %.2lf\n", (double)Wsum / (global));
 }
 
-void SRBF(int global) {
-  int currentTime = 0;
-  int index = global;
-
-  for (int i = 0; i < global; i++) {
-    processTable[i].remainingBurst = processTable[i].cpuburst;
-  }
-
-  while (index > 0) {
-    int minIndex = -1;
-
-    for (int i = 0; i < global; i++) {
-      if (processTable[i].arrival <= currentTime &&
-          processTable[i].remainingBurst > 0 &&
-          (minIndex == -1 || processTable[i].remainingBurst <
-                                 processTable[minIndex].remainingBurst)) {
-        minIndex = i;
+void SRBF() {
+  current_time = 0;
+  int remaining = MAX_PROCESS;
+  while (remaining > 0) {
+    int min = 1000000;
+    int index = -1;
+    for (int i = 0; i < MAX_PROCESS; i++) {
+      if (processtable[i].arrival <= current_time &&
+          processtable[i].cpuburst < min && processtable[i].cpuburst > 0) {
+        min = processtable[i].cpuburst;
+        index = i;
       }
     }
-
-    if (minIndex == -1) {
-      currentTime++;
+    if (index == -1) {
+      current_time++;
     } else {
-      printf("[%d - %d] %s running\n", currentTime,
-             currentTime + processTable[minIndex].remainingBurst,
-             processTable[minIndex].name);
-
-      currentTime += processTable[minIndex].remainingBurst;
-      processTable[minIndex].remainingBurst = 0;
-      processTable[minIndex].turnaround =
-          currentTime - processTable[minIndex].arrival;
-      processTable[minIndex].wait = currentTime -
-                                    processTable[minIndex].arrival -
-                                    processTable[minIndex].cpuburst;
-
-      index--;
+      processtable[index].cpuburst--;
+      current_time++;
+      if (processtable[index].cpuburst == 0) {
+        remaining--;
+        processtable[index].turnaround =
+            current_time - processtable[index].arrival;
+      }
     }
   }
-  int TAsum = 0;
-  printf("Turnaround Time\n");
-  for (int i = 0; i < global; i++) {
-    printf("%s [%d]\n", processTable[i].name, processTable[i].turnaround);
-    TAsum += processTable[i].turnaround;
-  }
-
-  int Wsum = 0;
-  printf("Waiting Time\n");
-  for (int i = 0; i < global; i++) {
-    printf("%s [%d]\n", processTable[i].name, processTable[i].wait);
-    Wsum += processTable[i].wait;
-  }
-  strcpy(resultTable[2].name, "SRBF");
-  resultTable[2].AverageTurnAroundTime = (double)TAsum / (double)global;
-  resultTable[2].AverageWaitingTime = (double)Wsum / (double)global;
-  resultTable[2].totalTime = currentTime;
-  printf("Average Turnaround Time : %.2lf\n", (double)TAsum / (global));
-  printf("Average Waiting Time : %.2lf\n", (double)Wsum / (global));
 }
 
 int main() {
-  int i = -1;
-  // freopen("result.txt", "w", stdout);
-  printf("Select the file name from 1.txt, 2.txt, 3.txt, 4.txt: ");
-  char filename[100];
-  scanf("%s", filename);
-  while (i) {
-    printf("Enter 1 to run FCFS\n");
-    printf("Enter 2 to run Round Robin\n");
-    printf("Enter 3 to run SRBF\n");
-    printf("Enter 4 to change the file\n");
-    printf("Enter 0 to exit\n");
-    scanf("%d", &i);
-    if (i == 1) {
-      ReadProcessTable(filename);
-      FCFS();
-    } else if (i == 2) {
-      ReadProcessTable(filename);
-      RoundRobin();
-    } else if (i == 3) {
-      ReadProcessTable(filename);
-      SRBF(global);
-    } else if (i == 4) {
-      printf("Enter the file name (1.txt / 2.txt / 3.txt / 4.txt): ");
-      char filename[100];
-      scanf("%s", filename);
-    }
-  }
-  sortResultTable();
+  ReadProcessTable("processes.txt");
+
+  FCFS();
+  printf("After FCFS:\n");
+  PrintProcessTable();
+  // PrintStatistics();
+
+  RR(10);
+  printf("After RR:\n");
+  PrintProcessTable();
+  // PrintStatistics();
+
+  SRBF();
+  printf("After SRBF:\n");
+  PrintProcessTable();
+  // PrintStatistics();
+
   return 0;
 }
