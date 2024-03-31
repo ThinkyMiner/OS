@@ -129,7 +129,7 @@ int main() {
         pthread_join(threads[i], NULL);
     }
 
-    pthread_exit(NULL); // Ensure main thread doesn't exit until all philosopher threads have finished
+    pthread_exit(NULL);
 
     return 0;
 }
